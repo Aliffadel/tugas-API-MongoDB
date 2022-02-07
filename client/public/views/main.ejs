@@ -5,7 +5,7 @@
 <body>
   <%- include('partial/navbar') %>
   <div class="container-fluid">
-    <h1 class="text-center">Hobby List</h1>
+    <h1 class="text-center">User List</h1>
     <a href="/add">
       <button class="btn btn-primary mb-2 mt-2">Add List</button>
     </a>
@@ -14,7 +14,8 @@
         <tr>
           <th>ID</th>
           <th>Name</th>
-          <th>Hoby</th>
+          <th>Email</th>
+          <th>Password</th>
           <th>Action</th>
         </tr>
       </thead>
@@ -23,7 +24,8 @@
         <tr>
           <td><%= item._id %> </td>
           <td><%= item.name %> </td>
-          <td><%= item.hobby %> </td>
+          <td><%= item.email %> </td>
+          <td><%= item.password %> </td>
           <td>
             <div class="row">
               <div class="col-6">

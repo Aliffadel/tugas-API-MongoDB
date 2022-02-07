@@ -2,25 +2,25 @@ const express = require("express")
 const app = express()
 const router = express.Router()
 const client = require('./connection')
-const db = client.db('hobby_list')
+const db = client.db('user_list')
 const ObjectId = require("mongodb").ObjectId
 
-router.get('/api/hobby', async (req, res) => {
+router.get('/api/user', async (req, res) => {
   try {
     // untuk connect ke database
     await client.connect();
-    const hobbies = await db.collection('hobbies').find().toArray()
-    if (hobbies.length > 0) {
+    const users = await db.collection('users').find().toArray()
+    if (users.length > 0) {
       res.status(200).json({
-        message: "Get List Hobbies Successfully",
+        message: "Get List Users Successfully",
         status: "success",
-        data: hobbies
+        data: users
       })
     } else {
       res.status(200).json({
-        message: "No Hobby List Found",
+        message: "No User List Found",
         status: "success",
-        data: hobbies
+        data: users
       })
     }
   } catch (error) {
@@ -31,22 +31,22 @@ router.get('/api/hobby', async (req, res) => {
   }
 })
 
-router.get('/api/hobby/:id', async (req, res) => {
+router.get('/api/user/:id', async (req, res) => {
   try {
     // untuk connect ke database
     await client.connect();
-    const hobby = await db.collection('hobbies').findOne({ _id: ObjectId(req.params.id) })
-    if (hobby) {
+    const users = await db.collection('users').findOne({ _id: ObjectId(req.params.id) })
+    if (users) {
       res.status(200).json({
-        message: "Get Hobby Successfully",
+        message: "Get User Successfully",
         status: "success",
-        data: hobby
+        data: users
       })
     } else {
       res.status(200).json({
-        message: "Hobby Not Found",
+        message: "User Not Found",
         status: "success",
-        data: hobby
+        data: users
       })
     }
   } catch (error) {
@@ -57,23 +57,24 @@ router.get('/api/hobby/:id', async (req, res) => {
   }
 })
 
-router.post('/api/hobby', async (req, res) => {
+router.post('/api/user', async (req, res) => {
   try {
     await client.connect()
     const newDocument = {
       name: req.body.name,
-      hobby: req.body.hobby
+      email: req.body.email,
+      password: req.body.password
     }
-    const result = await db.collection('hobbies').insertOne(newDocument)
+    const result = await db.collection('users').insertOne(newDocument)
     if (result.acknowledged === true) {
       res.status(201).json({
-        message: "Hobby Created Successfully",
+        message: "User Created Successfully",
         status: "success",
         data: newDocument
       })
     } else {
       res.status(500).json({
-        message: "Hobby Failed to Create",
+        message: "User Failed to Create",
         status: "fail"
       })
     }
@@ -84,17 +85,17 @@ router.post('/api/hobby', async (req, res) => {
   }
 })
 
-router.put('/api/hobby/:id', async (req, res) => {
+router.put('/api/user/:id', async (req, res) => {
   try {
     if (!req.params.id) {
       res.status(400).json({
-        message: "Hobby Failed to Update, Please Insert ID",
+        message: "User Failed to Update, Please Insert ID",
         status: "fail"
       })
     } else {
       await client.connect()
-      const { name, hobby } = req.body
-      const result = await db.collection('hobbies').updateOne(
+      const { name, email, password } = req.body
+      const result = await db.collection('users').updateOne(
         {
           // wajib dikasih object id supaya bisa nemuin data dengan ID yang sesuai di collection nya
           _id: ObjectId(req.params.id),
@@ -103,18 +104,19 @@ router.put('/api/hobby/:id', async (req, res) => {
           // method set untuk mengupdate data
           $set: {
             name: name,
-            hobby: hobby
+            email: email,
+            password : password
           }
         }
       )
       if (result.modifiedCount > 0) {
         res.status(201).json({
-          message: "Hobby Updated Successfully",
+          message: "User Updated Successfully",
           status: "success"
         })
       } else {
         res.status(500).json({
-          message: "Hobby Failed to Update",
+          message: "User Failed to Update",
           status: "fail"
         })
       }
@@ -127,26 +129,26 @@ router.put('/api/hobby/:id', async (req, res) => {
   }
 })
 
-router.delete('/api/hobby', async (req, res) => {
+router.delete('/api/user', async (req, res) => {
   try {
     if (!req.query.id) {
       res.status(400).json({
-        message: "Hobby Failed to Delete, Please Insert ID",
+        message: "User Failed to Delete, Please Insert ID",
         status: "fail"
       })
     } else {
       await client.connect()
-      const result = await db.collection('hobbies').deleteOne({
+      const result = await db.collection('users').deleteOne({
         _id: ObjectId(req.query.id)
       })
       if (result.deletedCount > 0) {
         res.status(201).json({
-          message: "Hobby Deleted Successfully",
+          message: "User Deleted Successfully",
           status: "success"
         })
       } else {
         res.status(500).json({
-          message: "Hobby Failed to Delete",
+          message: "User Failed to Delete",
           status: "fail"
         })
       }

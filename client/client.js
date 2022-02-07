@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser')
 const jwt = require('jsonwebtoken')
 const isLoggedIn = require('./middleware/authMiddleware')
 const axios = require('axios')
+const bcrypt = require('bcrypt');
 
 app.use(cookieParser())
 app.set('view engine', 'ejs')
@@ -18,7 +19,7 @@ app.use(express.json())
 
 app.get('/', isLoggedIn, async (req, res) => {
 
-  const response = await axios.get('http://localhost:3000/api/hobby')
+  const response = await axios.get('http://localhost:3000/api/user')
 
   res.render('main', {
     pageTitle: "Main",
@@ -34,13 +35,16 @@ app.get('/add', isLoggedIn, (req, res) => {
 // edit cara post
 
 app.post('/add', async (req, res) => {
-  const { name, hobby } = req.body
-  const newHobby = {
+  const { name, email, password } = req.body
+  const salt = bcrypt.genSaltSync(10);
+  const hashPassword = bcrypt.hashSync(password, salt);
+  const newUser = {
     name,
-    hobby
+    email,
+    password : hashPassword
   }
 
-  const response = await axios.post('http://localhost:3000/api/hobby', newHobby)
+  const response = await axios.post('http://localhost:3000/api/user', newUser)
   // await axios.post('http://localhost:3000/api/hobby', { name: name, hobby: hobby })
   console.log(response);
   if (response.status === 201) {
@@ -52,7 +56,7 @@ app.post('/add', async (req, res) => {
 
 app.get('/edit', isLoggedIn, async (req, res) => {
   const { id } = req.query
-  const response = await axios.get(`http://localhost:3000/api/hobby/${id}`)
+  const response = await axios.get(`http://localhost:3000/api/user/${id}`)
 
   if (response.data.status === "success") {
     res.render('edit.ejs', {
@@ -67,15 +71,16 @@ app.get('/edit', isLoggedIn, async (req, res) => {
 
 app.post('/edit', async (req, res) => {
   const { id } = req.query
-  const { name, hobby } = req.body
+  const { name, email, password } = req.body
 
   const dataToEdit = {
     name: name,
-    hobby: hobby
+    email: email,
+    password: password
   }
 
   try {
-    const response = await axios.put(`http://localhost:3000/api/hobby/${id}`, dataToEdit)
+    const response = await axios.put(`http://localhost:3000/api/user/${id}`, dataToEdit)
     res.redirect('/')
   } catch (error) {
     res.redirect(`/edit?id=${id}`)
@@ -87,7 +92,7 @@ app.post('/edit', async (req, res) => {
 
 app.post('/delete', async (req, res) => {
   const { id } = req.query
-  const response = await axios.delete(`http://localhost:3000/api/hobby?id=${id}`)
+  const response = await axios.delete(`http://localhost:3000/api/user?id=${id}`)
   res.redirect('/')
 })
 
@@ -133,13 +138,19 @@ app.get('/set-cookies', (req, res) => {
   // res.setHeader('Set-Cookie', 'userId=1')
   // cara modul cookieParser
   res.cookie('userId', 1)
-  res.cookie('username', "Didi", { maxAge: 1000 * 60 * 60 * 24 })
+  res.cookie('username', "Alif", { maxAge: 1000 * 60 * 60 * 24 })
   // max age cookie gunanya untuk masa waktu cookie di dalam browser
   // kalau waktunya habis maka cookie nya akan menghilang
   res.json({
     message: "anda mendapat cookie"
   })
 })
+
+app.post('/logout', (req, res) => {
+  res.cookie('jwt', '', { maxAge: 5000 })
+  res.redirect('/login')
+})
+
 
 const PORT = 5000
 app.listen(PORT, () => {
